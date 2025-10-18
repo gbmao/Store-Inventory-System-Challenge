@@ -69,11 +69,14 @@ public class InventoryItem {
 
     }
 
+    //TODO Still not sure how this should work
     public void placeInventoryOrder() {
         if (qtyLow >= qtyTotal) {
             qtyReorder = qtyLow - 10; // 10 = the total number of items I want
         }
     }
+
+
 
     //getters for test
 

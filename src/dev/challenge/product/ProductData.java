@@ -11,15 +11,19 @@ public class ProductData {
             Adventure 790, KTM, TRAIL, 15000, 8, 2
             Bike 250, Generic, DEFAULT, 3000, 16, 4
             """;
-    public static HashMap<String, Product> getData() {
+    public static HashMap<String, InventoryItem> getData() {
         Scanner scanner = new Scanner(product);
-        HashMap<String, Product> dataList = new HashMap<>();
+        HashMap<String, InventoryItem> dataList = new HashMap<>();
 
         while(scanner.hasNext()) {
             String[] data = scanner.nextLine().split(",");
             Product product1 = new Product(data[0].trim().toUpperCase(),
                     data[1].trim().toUpperCase(), data[2].trim().toUpperCase());
-            dataList.put(product1.getSku(), product1);
+
+            InventoryItem item = new InventoryItem(Integer.parseInt(data[3].trim()),Integer.parseInt(data[5].trim()),
+                    Integer.parseInt(data[4].trim()), product1);
+
+            dataList.put(item.getProduct().getSku(), item);
         }
         return dataList;
     }
