@@ -24,7 +24,8 @@ public class InventoryItem  {
      */
     public boolean reserveItem(int qty){
         if(qtyTotal < qty) {
-            System.out.println("Not enough items, only " + qtyTotal + " available in stock"); // remove the message and let other class handle it?
+            System.out.println("Not enough items, only " + qtyTotal +
+                    " available in stock"); // remove the message and let other class handle it?
             return false;
         }
         qtyTotal -= qty;
@@ -32,12 +33,26 @@ public class InventoryItem  {
         System.out.println(qty + " " + product.getSku() + " reserved "); // TODO insert name of buyer and data
         return true;
     }
-    public void releaseItem(){
 
+    /**
+     * Does the reverse of reserveItem() if param> qtyReserved, removes everything
+     *  and return it to qtyTotal
+     */
+    public boolean releaseItem(int qty){
+        if(qtyReserved < qty) qty = qtyReserved; // just to ensure no negative value
+        qtyTotal += qty;
+        qtyReserved -= qty;
+        System.out.println();
+        return true;
     }
     public void sellItem(){
 
     }
+
+    public void sellItem(int qty){
+
+    }
+
     public void placeInventoryOrder(){
 
     }
