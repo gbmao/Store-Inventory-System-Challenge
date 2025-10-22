@@ -18,9 +18,10 @@ public  class Product {
             case "TRAIL" -> this.category = Category.TRAIL.toString();
             default -> this.category = Category.DEFAULT.toString();
         }
-        this.sku = makeSku(name, manufacturer, category) ; // TODO criar um metodo melhor
+        this.sku = makeSku(name, manufacturer, category) ;
     }
 
+    //make sku with the data of product
     private static String makeSku(String name, String manufacturer, String category){
         return name.substring(0, 3).trim() + "-" + manufacturer.substring(0, 3) + "-" +
                 category.substring(0,3) + name.substring(name.lastIndexOf(" ") + 1);
