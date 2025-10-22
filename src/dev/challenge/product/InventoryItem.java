@@ -24,8 +24,9 @@ public class InventoryItem {
      * @return true or false and a message
      */
     public boolean reserveItem(int qty) {
-        if (qtyTotal < qty) {
-            System.out.println("Not enough items, only " + qtyTotal +
+        int available = qtyTotal - qtyReserved;
+        if (available < qty) {
+            System.out.println(product.getSku() + " Not enough items, only " + qtyTotal +
                     " available in stock"); // remove the message and let other class handle it?
             return false;
         }
@@ -48,7 +49,7 @@ public class InventoryItem {
     }
 
     /**
-     * Sell every reserved item
+     * Sell from reserved item
      */
     public void sellItem() {
         qtyTotal -= qtyReserved;
@@ -77,9 +78,21 @@ public class InventoryItem {
     }
 
 
+    //
+    public Product moveProduct(int qty) {
+        if(reserveItem(qty)){
+            return product;
+        } else {
+            return null;
+        }
+    }
 
     //getters for test
 
+    public String getName() {
+
+        return product.getName();
+    }
 
     public Product getProduct() {
         return product;
@@ -103,5 +116,15 @@ public class InventoryItem {
 
     public int getSalesPrice() {
         return salesPrice;
+    }
+
+    @Override
+    public String toString() {
+        return product.getSku() + " {" +
+                "product=" + product.getName() +
+                ", qtyReserved=" + qtyReserved +
+                ", salesPrice=" + salesPrice +
+                ", qtyTotal=" + qtyTotal +
+                '}';
     }
 }
