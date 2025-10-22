@@ -24,8 +24,9 @@ public class InventoryItem {
      * @return true or false and a message
      */
     public boolean reserveItem(int qty) {
-        if (qtyTotal < qty) {
-            System.out.println("Not enough items, only " + qtyTotal +
+        int available = qtyTotal - qtyReserved;
+        if (available < qty) {
+            System.out.println(product.getSku() + " Not enough items, only " + qtyTotal +
                     " available in stock"); // remove the message and let other class handle it?
             return false;
         }
