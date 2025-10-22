@@ -9,7 +9,6 @@ import java.util.*;
 public class StoreLogic {
 
 
-
     private class Cart {
         enum Type {PHYSICAL, VIRTUAL}
 
@@ -18,7 +17,6 @@ public class StoreLogic {
         private LocalDate date;
         private Type type; // physical or virtual
         private String id;
-
 
 
         public Cart(String type) {
@@ -34,7 +32,7 @@ public class StoreLogic {
         }
 
 
-        public void addItem(String sku){
+        public void addItem(String sku) {
             // TODO retirar if-else
             if (type == Type.PHYSICAL) {
 
@@ -51,7 +49,7 @@ public class StoreLogic {
                 // virtual cart
                 if (!cartProducts.containsKey(sku)) {
                     if (inventory.get(sku).reserveItem(1)) {
-                        cartProducts.put(sku,1);
+                        cartProducts.put(sku, 1);
                     }
                 } else {
                     if (inventory.get(sku).reserveItem(1)) {
@@ -61,15 +59,26 @@ public class StoreLogic {
             }
         }
 
-        public void removeItem(String sku, int qty){
-            if(!cartProducts.containsKey(sku)) {
+        public void removeItem(String sku, int qty) {
+
+
+            if (!cartProducts.containsKey(sku)) {
                 System.out.println("Not such Item on cart");
             } else {
-                aisleInventory.get(sku).releaseItem(qty);
+                // check for physical or virtual
+                if (type == Type.PHYSICAL) {
+
+                    aisleInventory.get(sku).releaseItem(qty);
+
+                } else {
+                    inventory.get(sku).releaseItem(qty);
+                }
+
+
                 int newValue = cartProducts.get(sku) - qty;
 
-                if(newValue > 0) {
-                cartProducts.replace(sku,cartProducts.get(sku),newValue );
+                if (newValue > 0) {
+                    cartProducts.replace(sku, cartProducts.get(sku), newValue);
 
                 } else {
 
@@ -80,17 +89,25 @@ public class StoreLogic {
         }
 
         public void removeAllItems() {
-            cartProducts.forEach((k,v) -> {
-                aisleInventory.get(k).releaseItem(v);
-            });
+            if (type == Type.PHYSICAL) {
+                cartProducts.forEach((k, v) -> {
+                    aisleInventory.get(k).releaseItem(v);
+                });
+
+            } else {
+                cartProducts.forEach((k, v) -> {
+                    inventory.get(k).releaseItem(v);
+                });
+
+            }
             cartProducts.clear();
 
         }
 
 
-        public void printSaleSlip(){
+        public void printSaleSlip() {
             int totalValue = 0;
-            System.out.println("Cart ID: " + id  + " Data: " + getDate());
+            System.out.println("Cart ID: " + id + " Data: " + getDate());
 //            cartProducts.forEach((k, v) -> {
 //                int totalValue = v * aisleInventory.get(k).getSalesPrice();
 //                System.out.printf("%s: %-10s Unit price:$%-10s total: $%-10s%n",v, aisleInventory.get(k).getName(),
@@ -99,7 +116,7 @@ public class StoreLogic {
 //
 //            });
 
-            for(Map.Entry<String, Integer> entry : cartProducts.entrySet()) {
+            for (Map.Entry<String, Integer> entry : cartProducts.entrySet()) {
                 String productId = entry.getKey();
                 int quantity = entry.getValue();
                 int subTotal = quantity * aisleInventory.get(productId).getSalesPrice();
@@ -113,22 +130,28 @@ public class StoreLogic {
             System.out.printf("          %44s$%,12d%n", "Total cart value: ", totalValue);
 
 
-
         }
 
         //sell everything
-        public void sell(){
-            cartProducts.forEach((k,v) ->{
+        public void sell() {
+            if(type == Type.PHYSICAL) {
+            cartProducts.forEach((k, v) -> {
                 aisleInventory.get(k).releaseItem(v);
                 aisleInventory.get(k).sellItem(v);
             });
+
+            } else {
+                cartProducts.forEach((k, v) -> {
+                    inventory.get(k).releaseItem(v);
+                    inventory.get(k).sellItem(v);
+                });
+            }
         }
 
 
         public String getId() {
             return id;
         }
-
 
 
         public LocalDate getDate() {
@@ -141,29 +164,29 @@ public class StoreLogic {
     }
 
     private HashMap<String, InventoryItem> inventory;
-    private HashMap<String,  InventoryItem> aisleInventory = new HashMap<>(); // display physical on store shelves
+    private HashMap<String, InventoryItem> aisleInventory = new HashMap<>(); // display physical on store shelves
     private HashMap<String, Cart> carts = new HashMap<>();
 
     //constructor
-    public StoreLogic(){
+    public StoreLogic() {
         inventory = new HashMap<>(ProductData.getData());
         aisleInventory = new HashMap<>();
     }
 
 
-    public void setAisleInventory(){
+    public void setAisleInventory() {
 
         aisleInventory.put("FAT-HAR-CUS1746",
-                new InventoryItem(25000, 0,3,
+                new InventoryItem(25000, 0, 3,
                         inventory.get("FAT-HAR-CUS1746").moveProduct(1)));
         aisleInventory.put("CB5-HON-NAK500",
-                new InventoryItem(25000, 0,1,
+                new InventoryItem(25000, 0, 1,
                         inventory.get("CB5-HON-NAK500").moveProduct(1)));
         aisleInventory.put("ADV-KTM-TRA790",
-                new InventoryItem(25000, 0,1,
+                new InventoryItem(25000, 0, 1,
                         inventory.get("ADV-KTM-TRA790").moveProduct(1)));
         aisleInventory.put("R1-YAM-SPO1000",
-                new InventoryItem(25000, 0,1,
+                new InventoryItem(25000, 0, 1,
                         inventory.get("R1-YAM-SPO1000").moveProduct(1)));
 
 //        aisleInventory.put("FAT-HAR-CUS1746", inventory.get("FAT-HAR-CUS1746").moveProduct(1))
@@ -172,18 +195,19 @@ public class StoreLogic {
 
     // print lists
     public void printList() {
-        inventory.forEach((k,v) -> System.out.println(v));
+        inventory.forEach((k, v) -> System.out.println(v));
     }
-    public void printAisleList(){
-        aisleInventory.forEach((k,v) -> System.out.println(v));
+
+    public void printAisleList() {
+        aisleInventory.forEach((k, v) -> System.out.println(v));
     }
 
 
     //TODO criar menu interativo para comprar
     // nao faz parte do exercício
-    public String manageStoreCart(){
+    public String manageStoreCart() {
         Cart cart = new Cart("PHYSICAL");
-        carts.put(cart.getId(),cart);
+        carts.put(cart.getId(), cart);
         cart.addItem("FAT-HAR-CUS1746");
         cart.addItem("FAT-HAR-CUS1746");
         cart.addItem("CB5-HON-NAK500");
@@ -194,31 +218,45 @@ public class StoreLogic {
 //        cart.removeItem("FAT-HAR-CUS1746", 1);
 //        cart.removeAllItems();
         cart.printSaleSlip();
-        return  cart.getId();
+
+        printList();
+        System.out.println("Criando virtual");
+        Cart cart2 = new Cart("VIRTUAL");
+        carts.put(cart2.getId(), cart2);
+        cart2.addItem("FAT-HAR-CUS1746");
+        cart2.addItem("FAT-HAR-CUS1746");
+        cart2.addItem("CB5-HON-NAK500");
+        cart2.printSaleSlip();
+        printList();
+//        cart2.removeAllItems();
+        checkoutCart(cart2.id);
+        cart2.printSaleSlip();
+        printList();
+        return cart.getId();
     }
 
-    public void checkoutCart(String id){
+    public void checkoutCart(String id) {
         carts.get(id).sell();
     }
 
-    public void abandonCart(){
+    public void abandonCart() {
         // abandonCart if date is different from actual date
-        carts.forEach((k,v) -> {
+        carts.forEach((k, v) -> {
             if (!Objects.equals(v.getDate(), LocalDate.now())) {
                 v.removeAllItems();
             }
         });
     }
 
-    public void listProductByCategory(){
+    public void listProductByCategory() {
         Map<String, Collection<InventoryItem>> categoryMap = new HashMap<>();
-        aisleInventory.forEach((k,v) -> {
+        aisleInventory.forEach((k, v) -> {
             String category = v.getProduct().getCategory();
 
-            categoryMap.computeIfAbsent(category, c-> new ArrayList<>()).add(v);
+            categoryMap.computeIfAbsent(category, c -> new ArrayList<>()).add(v);
         });
 
-        categoryMap.forEach((k,v) -> {
+        categoryMap.forEach((k, v) -> {
             System.out.println("----------------------------------");
             System.out.println("Category: " + k);
             v.forEach(System.out::println);
@@ -229,7 +267,7 @@ public class StoreLogic {
 
     // test
     public void getCartsId() {
-        carts.forEach((k,v) -> System.out.println("ID: " + k + " cart:" + v));
+        carts.forEach((k, v) -> System.out.println("ID: " + k + " cart:" + v));
     }
 
 

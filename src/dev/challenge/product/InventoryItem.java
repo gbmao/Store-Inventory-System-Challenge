@@ -49,7 +49,7 @@ public class InventoryItem {
     }
 
     /**
-     * Sell every reserved item
+     * Sell from reserved item
      */
     public void sellItem() {
         qtyTotal -= qtyReserved;
