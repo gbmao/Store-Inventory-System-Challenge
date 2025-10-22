@@ -77,9 +77,21 @@ public class InventoryItem {
     }
 
 
+    //
+    public Product moveProduct(int qty) {
+        if(reserveItem(qty)){
+            return product;
+        } else {
+            return null;
+        }
+    }
 
     //getters for test
 
+    public String getName() {
+
+        return product.getName();
+    }
 
     public Product getProduct() {
         return product;
@@ -103,5 +115,15 @@ public class InventoryItem {
 
     public int getSalesPrice() {
         return salesPrice;
+    }
+
+    @Override
+    public String toString() {
+        return product.getSku() + " {" +
+                "product=" + product.getName() +
+                ", qtyReserved=" + qtyReserved +
+                ", salesPrice=" + salesPrice +
+                ", qtyTotal=" + qtyTotal +
+                '}';
     }
 }
