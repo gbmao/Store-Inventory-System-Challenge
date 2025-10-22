@@ -4,7 +4,7 @@ import dev.challenge.product.InventoryItem;
 import dev.challenge.product.ProductData;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.*;
 
 public class StoreLogic {
 
@@ -35,6 +35,7 @@ public class StoreLogic {
 
 
         public void addItem(String sku){
+            // TODO retirar if-else
             if (type == Type.PHYSICAL) {
 
                 if (!cartProducts.containsKey(sku)) {
@@ -48,28 +49,81 @@ public class StoreLogic {
                 }
             } else {
                 // virtual cart
+                if (!cartProducts.containsKey(sku)) {
+                    if (inventory.get(sku).reserveItem(1)) {
+                        cartProducts.put(sku,1);
+                    }
+                } else {
+                    if (inventory.get(sku).reserveItem(1)) {
+                        cartProducts.replace(sku, cartProducts.get(sku) + 1);
+                    }
+                }
             }
         }
 
-        public void removeItem(String sku){
+        public void removeItem(String sku, int qty){
             if(!cartProducts.containsKey(sku)) {
                 System.out.println("Not such Item on cart");
             } else {
-                aisleInventory.get(sku).releaseItem(cartProducts.get(sku));
-                cartProducts.remove(sku);
+                aisleInventory.get(sku).releaseItem(qty);
+                int newValue = cartProducts.get(sku) - qty;
+
+                if(newValue > 0) {
+                cartProducts.replace(sku,cartProducts.get(sku),newValue );
+
+                } else {
+
+                    cartProducts.remove(sku);
+                }
             }
+
         }
+
+        public void removeAllItems() {
+            cartProducts.forEach((k,v) -> {
+                aisleInventory.get(k).releaseItem(v);
+            });
+            cartProducts.clear();
+
+        }
+
 
         public void printSaleSlip(){
             int totalValue = 0;
-            System.out.print("Cart ID: " + id );
-            cartProducts.forEach((k, v) -> {
-                System.out.printf("%-10s %-10s",aisleInventory.get(k).getName(),
-                        aisleInventory.get(k).getSalesPrice());
+            System.out.println("Cart ID: " + id  + " Data: " + getDate());
+//            cartProducts.forEach((k, v) -> {
+//                int totalValue = v * aisleInventory.get(k).getSalesPrice();
+//                System.out.printf("%s: %-10s Unit price:$%-10s total: $%-10s%n",v, aisleInventory.get(k).getName(),
+//                        aisleInventory.get(k).getSalesPrice(), totalValue);
+//
+//
+//            });
 
-            });
+            for(Map.Entry<String, Integer> entry : cartProducts.entrySet()) {
+                String productId = entry.getKey();
+                int quantity = entry.getValue();
+                int subTotal = quantity * aisleInventory.get(productId).getSalesPrice();
+
+                System.out.printf("%3d: %-15s Unit price: $%,10d   Total: $%,12d%n",
+                        quantity, aisleInventory.get(productId).getName(),
+                        aisleInventory.get(productId).getSalesPrice(), subTotal);
+                totalValue += subTotal;
+            }
+
+            System.out.printf("          %44s$%,12d%n", "Total cart value: ", totalValue);
+
+
 
         }
+
+        //sell everything
+        public void sell(){
+            cartProducts.forEach((k,v) ->{
+                aisleInventory.get(k).releaseItem(v);
+                aisleInventory.get(k).sellItem(v);
+            });
+        }
+
 
         public String getId() {
             return id;
@@ -100,7 +154,7 @@ public class StoreLogic {
     public void setAisleInventory(){
 
         aisleInventory.put("FAT-HAR-CUS1746",
-                new InventoryItem(25000, 0,1,
+                new InventoryItem(25000, 0,3,
                         inventory.get("FAT-HAR-CUS1746").moveProduct(1)));
         aisleInventory.put("CB5-HON-NAK500",
                 new InventoryItem(25000, 0,1,
@@ -125,24 +179,51 @@ public class StoreLogic {
     }
 
 
+    //TODO criar menu interativo para comprar
+    // nao faz parte do exercício
     public String manageStoreCart(){
         Cart cart = new Cart("PHYSICAL");
         carts.put(cart.getId(),cart);
         cart.addItem("FAT-HAR-CUS1746");
+        cart.addItem("FAT-HAR-CUS1746");
+        cart.addItem("CB5-HON-NAK500");
+        printAisleList();
+        cart.printSaleSlip();
+//        cart.removeItem("FAT-HAR-CUS1746", 1);
+        cart.printSaleSlip();
+//        cart.removeItem("FAT-HAR-CUS1746", 1);
+//        cart.removeAllItems();
         cart.printSaleSlip();
         return  cart.getId();
     }
 
-    public void checkoutCart(){
-
+    public void checkoutCart(String id){
+        carts.get(id).sell();
     }
 
     public void abandonCart(){
         // abandonCart if date is different from actual date
+        carts.forEach((k,v) -> {
+            if (!Objects.equals(v.getDate(), LocalDate.now())) {
+                v.removeAllItems();
+            }
+        });
     }
 
     public void listProductByCategory(){
+        Map<String, Collection<InventoryItem>> categoryMap = new HashMap<>();
+        aisleInventory.forEach((k,v) -> {
+            String category = v.getProduct().getCategory();
 
+            categoryMap.computeIfAbsent(category, c-> new ArrayList<>()).add(v);
+        });
+
+        categoryMap.forEach((k,v) -> {
+            System.out.println("----------------------------------");
+            System.out.println("Category: " + k);
+            v.forEach(System.out::println);
+//            System.out.println("----------------------------------");
+        });
     }
 
 
